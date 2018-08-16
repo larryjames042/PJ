@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">PJ</string>
+    <string name="app_name">Baking App</string>
+    <string name="title_recipe_list">Recipes</string>
+    <string name="title_recipe_detail">Recipe Detail</string>
+    <string name="title_item_list">Items</string>
+    <string name="title_item_detail">Item Detail</string>
 </resources>
