@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".UI.MainActivity"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--Master list-->
+    <FrameLayout
+        android:id="@+id/recipe_detail_container"
+        android:layout_width="400dp"
+        android:layout_height="match_parent" />
+    <view
+        android:layout_width="@dimen/masterlist_divider_width"
+        android:layout_height="match_parent"
+        android:background="@android:color/darker_gray"/>
+
+    <!--Detail -->
+    <LinearLayout
+        android:id="@+id/step_detail_linear_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+            android:id="@+id/player_view"
+            android:layout_width="match_parent"
+            android:layout_height="350dp">
+
+        </com.google.android.exoplayer2.ui.SimpleExoPlayerView>
+        <ImageView
+            android:id="@+id/imageview_no_video"
+            android:src="@drawable/ic_launcher_background"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <android.support.v7.widget.CardView
+            android:layout_margin="@dimen/recipe_description_margin"
+            android:padding="@dimen/recipe_description_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:padding="@dimen/recipe_item_padding"
+                android:id="@+id/tv_description"
+                tools:text="Description"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </android.support.v7.widget.CardView>
+
+    </LinearLayout>
+
+
+
+
+
+
+</LinearLayout>
