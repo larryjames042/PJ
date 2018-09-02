@@ -1,11 +1,14 @@
 package mirror.co.larry.pj.Models;
 
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 
-public class Steps implements Serializable {
+public class Steps extends BaseObservable implements Serializable {
     @SerializedName("id")
     @Expose
     private int id;
@@ -37,6 +40,7 @@ public class Steps implements Serializable {
         this.id = id;
     }
 
+    @Bindable
     public String getShortDescription() {
         return shortDescription;
     }

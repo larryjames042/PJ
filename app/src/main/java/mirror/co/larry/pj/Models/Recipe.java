@@ -1,15 +1,19 @@
 package mirror.co.larry.pj.Models;
 
+import android.databinding.BaseObservable;
+import android.databinding.Bindable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.List;
 
-public class Recipe implements Serializable{
+public class Recipe extends BaseObservable implements Serializable{
     @SerializedName("id")
     @Expose
      private int id;
+
 
     @SerializedName("name")
     @Expose
@@ -40,6 +44,7 @@ public class Recipe implements Serializable{
         this.id = id;
     }
 
+    @Bindable
     public String getName() {
         return name;
     }

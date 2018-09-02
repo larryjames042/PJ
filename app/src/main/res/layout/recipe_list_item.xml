@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_margin="@dimen/recipe_item_margin"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <TextView
-        tools:text="Cake"
-        android:textSize="@dimen/recipe_item_text_size"
-        android:id="@+id/tv_recipe_name"
-        android:gravity="center"
-        android:padding="@dimen/recipe_item_padding"
+    <data>
+        <variable
+            name="recipe"
+            type="mirror.co.larry.pj.Models.Recipe" />
+    </data>
+
+    <android.support.v7.widget.CardView
+        android:layout_margin="@dimen/recipe_item_margin"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-</android.support.v7.widget.CardView>
+        android:layout_height="wrap_content">
+        <TextView
+            tools:text="Cake"
+            android:textSize="@dimen/recipe_item_text_size"
+            android:id="@+id/tv_recipe_name"
+            android:gravity="center"
+            android:text="@{recipe.name}"
+            android:padding="@dimen/recipe_item_padding"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </android.support.v7.widget.CardView>
+</layout>
+
 

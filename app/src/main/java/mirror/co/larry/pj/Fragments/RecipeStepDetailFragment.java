@@ -2,10 +2,12 @@ package mirror.co.larry.pj.Fragments;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.databinding.DataBindingUtil;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -14,9 +16,11 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -30,6 +34,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
 import mirror.co.larry.pj.R;
+import mirror.co.larry.pj.databinding.FragmentRecipeStepDetailBinding;
 import okhttp3.internal.Util;
 
 /**
@@ -41,31 +46,50 @@ import okhttp3.internal.Util;
  * create an instance of this fragment.
  */
 public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
+
+    // Final String to store state informaion
+    public static final String ISTWOPANE = "istwopane";
+    public static final String POSITION = "position";
+    public static final String VIDEO_URL = "videourl";
+    public static final String THUMBNAIL_URL = "thumbnailurl";
+    public static final String DESCRIPTION = "description";
+    public static final String PLAYER_POSITION = "player_position";
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_VIDEO = "videoUrl";
     public static final String ARG_THUMBNAIL= "thumbnail";
     private static final String ARG_DESCRIPTION = "description";
     private static final String ARG_POSITION = "position";
+    private static final String ARG_IS_TWOPANE = "twopane";
     // TODO: Rename and change types of parameters
     private String mVideoUrl;
     private String mShortDescription;
     private String mThumbnail;
     private int mPosition;
     private OnFragmentInteractionListener mListener;
-    SimpleExoPlayerView exoPlayerView;
     SimpleExoPlayer exoPlayer;
-    TextView mDescription;
-    ImageView mNoVideoImageView;
-    ImageButton mForwardButton;
-    ImageButton mBackButton;
-
+    boolean isTwoPane;
+    long playerPosition;
+    FragmentRecipeStepDetailBinding binding;
 
 
     public RecipeStepDetailFragment() {
         // Required empty public constructor
     }
 
+
+    public static RecipeStepDetailFragment newInstance(boolean isTwoPane,int position, String video,String thumbnail, String description) {
+        RecipeStepDetailFragment fragment = new RecipeStepDetailFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_IS_TWOPANE, isTwoPane);
+        args.putInt(ARG_POSITION, position);
+        args.putString(ARG_VIDEO, video);
+        args.putString(ARG_THUMBNAIL, thumbnail);
+        args.putString(ARG_DESCRIPTION, description);
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     public static RecipeStepDetailFragment newInstance(int position, String video,String thumbnail, String description) {
         RecipeStepDetailFragment fragment = new RecipeStepDetailFragment();
@@ -81,13 +105,39 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            mPosition = getArguments().getInt(ARG_POSITION);
-            mVideoUrl = getArguments().getString(ARG_VIDEO);
-            mThumbnail = getArguments().getString(ARG_THUMBNAIL);
-            mShortDescription = getArguments().getString(ARG_DESCRIPTION);
+        if(savedInstanceState==null){
+            if (getArguments() != null) {
+                isTwoPane = getArguments().getBoolean(ARG_IS_TWOPANE);
+                mPosition = getArguments().getInt(ARG_POSITION);
+                mVideoUrl = getArguments().getString(ARG_VIDEO);
+                mThumbnail = getArguments().getString(ARG_THUMBNAIL);
+                mShortDescription = getArguments().getString(ARG_DESCRIPTION);
+            }
         }
+
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+
+        outState.putLong(PLAYER_POSITION, playerPosition);
+        outState.putBoolean(ISTWOPANE,isTwoPane);
+        outState.putInt(POSITION, mPosition);
+        outState.putString(VIDEO_URL, mVideoUrl);
+        outState.putString(THUMBNAIL_URL, mThumbnail);
+        outState.putString(DESCRIPTION, mShortDescription);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(exoPlayer!=null){
+            playerPosition = exoPlayer.getCurrentPosition();
+            exoPlayer.stop();
+            exoPlayer.release();
+            exoPlayer = null;
+        }
+
     }
 
     @Override
@@ -95,71 +145,102 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         super.onConfigurationChanged(newConfig);
         if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
             // hide description view
-            mDescription.setVisibility(View.GONE);
+            binding.tvDescription.setVisibility(View.GONE);
             ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
             if(((AppCompatActivity)getActivity()).getSupportActionBar()!=null){
                 ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
             }
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) exoPlayerView.getLayoutParams();
-            params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-            params.height= ViewGroup.LayoutParams.MATCH_PARENT;
-            exoPlayerView.setLayoutParams(params);
+            if(isTwoPane){
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height= ViewGroup.LayoutParams.MATCH_PARENT;
+                binding.playerView.setLayoutParams(params);
+            }else{
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height= ViewGroup.LayoutParams.MATCH_PARENT;
+                binding.playerView.setLayoutParams(params);
+            }
+
         }else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
             ((AppCompatActivity)getActivity()).getSupportActionBar().show();
             if(((AppCompatActivity)getActivity()).getSupportActionBar()!=null){
                 ((AppCompatActivity)getActivity()).getSupportActionBar().show();
             }
             //unhide description
-            mDescription.setVisibility(View.VISIBLE);
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) exoPlayerView.getLayoutParams();
-            params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-            params.height=350;
-            exoPlayerView.setLayoutParams(params);
+            binding.tvDescription.setVisibility(View.VISIBLE);
+            if(isTwoPane){
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height=350;
+                binding.playerView.setLayoutParams(params);
+            }else{
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height=350;
+                binding.playerView.setLayoutParams(params);
+            }
+
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        if(savedInstanceState!=null){
+            isTwoPane = savedInstanceState.getBoolean(ISTWOPANE);
+            mPosition = savedInstanceState.getInt(POSITION);
+            mVideoUrl = savedInstanceState.getString(VIDEO_URL);
+            mThumbnail = savedInstanceState.getString(THUMBNAIL_URL);
+            mShortDescription = savedInstanceState.getString(DESCRIPTION);
+            playerPosition = savedInstanceState.getLong(PLAYER_POSITION, C.TIME_UNSET);
+
+        }
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_recipe_step_detail, container, false);
-        exoPlayerView = v.findViewById(R.id.player_view);
-        mDescription = v.findViewById(R.id.tv_description);
-        mForwardButton = v.findViewById(R.id.bt_next);
-         mBackButton = v.findViewById(R.id.bt_back);
-        mDescription.setText(mShortDescription);
-        mNoVideoImageView = v.findViewById(R.id.imageview_no_video);
-        exoPlayerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher_background));
+         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe_step_detail, container, false);
+        if(isTwoPane){
+            binding.btBack.setVisibility(View.GONE);
+            binding.btNext.setVisibility(View.GONE);
+        }else{
+            binding.btBack.setVisibility(View.VISIBLE);
+            binding.btNext.setVisibility(View.VISIBLE);
+        }
+
+        binding.tvDescription.setText(mShortDescription);
+        View v = binding.getRoot();
+
+        binding.playerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher_background));
 
 
         if(mVideoUrl==""){
             if(mThumbnail==""){
-                mNoVideoImageView.setVisibility(View.VISIBLE);
-                exoPlayerView.setVisibility(View.GONE);
+                binding.imageviewNoVideo.setVisibility(View.VISIBLE);
+                binding.playerView.setVisibility(View.GONE);
             }else{
-                mNoVideoImageView.setVisibility(View.GONE);
-                exoPlayerView.setVisibility(View.VISIBLE);
+                binding.imageviewNoVideo.setVisibility(View.GONE);
+                binding.playerView.setVisibility(View.VISIBLE);
                 initializeThePlayer(Uri.parse(mThumbnail));
             }
         }else{
-            mNoVideoImageView.setVisibility(View.GONE);
-            exoPlayerView.setVisibility(View.VISIBLE);
+            binding.imageviewNoVideo.setVisibility(View.GONE);
+            binding.playerView.setVisibility(View.VISIBLE);
             initializeThePlayer(Uri.parse(mVideoUrl));
         }
 
-        mForwardButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mListener.onNextButtonClick(mPosition++);
-            }
-        });
-
-        mBackButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mListener.onNextButtonClick(mPosition--);
-            }
-        });
+//        mForwardButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mListener.onNextButtonClick(mPosition++);
+//            }
+//        });
+//
+//        mBackButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                mListener.onNextButtonClick(mPosition--);
+//            }
+//        });
 
         return v;
     }
@@ -185,9 +266,12 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
             exoPlayer = ExoPlayerFactory.newSimpleInstance(getActivity(), trackSelector, loadControl);
-            exoPlayerView.setPlayer(exoPlayer);
+            binding.playerView.setPlayer(exoPlayer);
             String userAgent = com.google.android.exoplayer2.util.Util.getUserAgent(getActivity(), "RecipeStepDetailActivity");
             MediaSource mediaSource = new ExtractorMediaSource(mediaUri, new DefaultDataSourceFactory(getActivity(),userAgent), new DefaultExtractorsFactory(), null, null);
+            if(playerPosition!= C.TIME_UNSET){
+                exoPlayer.seekTo(playerPosition);
+            }
             exoPlayer.prepare(mediaSource);
             exoPlayer.setPlayWhenReady(true);
 
@@ -231,8 +315,8 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-        void onNextButtonClick(int position);
-        void onBackButtonClick(int position);
+//        void onNextButtonClick(int position);
+//        void onBackButtonClick(int position);
     }
 
 }

@@ -2,6 +2,7 @@ package mirror.co.larry.pj.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +18,7 @@ import mirror.co.larry.pj.Models.Recipe;
 import mirror.co.larry.pj.Models.Steps;
 import mirror.co.larry.pj.R;
 import mirror.co.larry.pj.UI.MainActivity;
+import mirror.co.larry.pj.databinding.RecipeListItemBinding;
 
 public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder> {
     public static final String RECIPE_KEY = "recipe";
@@ -29,8 +31,6 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
     Context mContext;
     List<Recipe> mRecipeList;
-    List<Steps> mSteps;
-    List<Ingredients> mIngredients;
     // public constructor
     public RecipeAdapter(Context context, List<Recipe> list){
         mContext = context;
@@ -41,34 +41,29 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
-        View v = LayoutInflater.from(mContext).inflate(R.layout.recipe_list_item, viewGroup, false);
 
-        return new ViewHolder(v);
+       LayoutInflater layoutInflater = LayoutInflater.from(viewGroup.getContext());
+       RecipeListItemBinding binding = DataBindingUtil.inflate(layoutInflater, R.layout.recipe_list_item, viewGroup, false);
+
+       return new ViewHolder(binding);
     }
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
-        final Recipe recipe = mRecipeList.get(i);
-        viewHolder.itemView.setTag(recipe.getId());
-        viewHolder.mRecipeName.setText(recipe.getName().toString());
-        viewHolder.mRecipeName.setOnClickListener(new View.OnClickListener() {
+//        final Recipe recipe = mRecipeList.get(i);
+        viewHolder.binding.setRecipe(mRecipeList.get(i));
+        viewHolder.binding.tvRecipeName.setText(mRecipeList.get(i).getName());
+        viewHolder.binding.tvRecipeName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                  mIngredients = recipe.getIngredients();
-//                  mSteps = recipe.getSteps();
-
                 Intent i = new Intent(mContext, MainActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putSerializable(RECIPE_KEY, recipe);
-//                bundle.putInt(RECIPE_ID_KEY, recipe.getId());
-//                bundle.putInt(RECIPE_SERVING_KEY, recipe.getServings());
-//                bundle.putString(RECIPE_IMAGE_KEY, recipe.getImage());
-//                bundle.putSerializable(INGREDIENT_KEY,  (Serializable) mIngredients);
-//                bundle.putSerializable(STEPS_KEY, (Serializable) mSteps);
+                bundle.putSerializable(RECIPE_KEY, viewHolder.binding.getRecipe());
                 i.putExtra(RECIPE_KEY_EXTRA, bundle);
                 mContext.startActivity(i);
             }
         });
+
     }
 
     @Override
@@ -81,11 +76,11 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        private RecipeListItemBinding binding;
 
-        TextView mRecipeName;
-        public ViewHolder(View itemView ) {
-            super(itemView);
-            mRecipeName = itemView.findViewById(R.id.tv_recipe_name);
+        public ViewHolder(RecipeListItemBinding itemBinding ) {
+            super(itemBinding.getRoot());
+            this.binding = itemBinding;
         }
     }
 }

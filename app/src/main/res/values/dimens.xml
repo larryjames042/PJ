@@ -24,4 +24,10 @@
     <dimen name="forward_button_margin">15dp</dimen>
     <dimen name="masterlist_divider_width">1dp</dimen>
 
+    <!--
+Refer to App Widget Documentation for margin information
+http://developer.android.com/guide/topics/appwidgets/index.html#CreatingLayout
+    -->
+    <dimen name="widget_margin">8dp</dimen>
+
 </resources>

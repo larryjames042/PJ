@@ -2,6 +2,7 @@ package mirror.co.larry.pj.UI;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
@@ -19,11 +20,11 @@ import mirror.co.larry.pj.Models.Ingredients;
 import mirror.co.larry.pj.Models.Recipe;
 import mirror.co.larry.pj.Models.Steps;
 import mirror.co.larry.pj.R;
+import mirror.co.larry.pj.databinding.ActivityMainBinding;
 
-public class MainActivity extends AppCompatActivity implements RecipeDetailFragment.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements RecipeDetailFragment.OnItemClickListener, RecipeStepDetailFragment.OnFragmentInteractionListener, RecipeIngredientFragment.OnFragmentInteractionListener {
 
-    List<Steps> stepsList;
-    List<Ingredients> ingredientsList;
+
     Recipe recipe;
     private boolean isTwoPane;
     private int mPosition;
@@ -35,22 +36,31 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(true);
 
+
         recipe=null;
         Bundle b = getIntent().getBundleExtra(RecipeAdapter.RECIPE_KEY_EXTRA);
         if(b!=null){
             recipe =(Recipe) b.getSerializable(RecipeAdapter.RECIPE_KEY);
         }
 
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.recipe_detail_container, RecipeDetailFragment.newInstance(recipe)).commit();
 
-        isTwoPane = findViewById(R.id.step_detail_linear_layout) != null;
+        if(findViewById(R.id.step_detail_linear_layout)!=null){
+            isTwoPane = true;
+            if(savedInstanceState==null){
+                fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeIngredientFragment.newInstance(recipe.getIngredients()), null).commit();
+            }
 
 
-
-
+        }else{
+            isTwoPane = false;
+        }
 
     }
+
+
 
     @Override
     public void onItemSelected(int position, List<Steps> stepsList, List<Ingredients> ingredientsList) {
@@ -60,13 +70,14 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeIngredientFragment.newInstance(ingredientsList), null).commit();
             }else{
+                mPosition = position-1;
                 String videoUrl="", des="", thumbnailUrl="";
                 videoUrl = stepsList.get(mPosition).getVideoURL();
                 des = stepsList.get(mPosition).getShortDescription();
                 thumbnailUrl = stepsList.get(mPosition).getThumbnailURL();
 
                 FragmentManager fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeStepDetailFragment.newInstance(mPosition,videoUrl,thumbnailUrl,des), null).commit();
+                fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeStepDetailFragment.newInstance(isTwoPane,mPosition,videoUrl,thumbnailUrl,des), null).commit();
             }
         }else{
 
@@ -93,20 +104,9 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
 
     }
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
 
-//    @Override
-//    public void onFragmentInteraction(Uri uri) {
-//
-//    }
-//
-//    @Override
-//    public void onNextButtonClick(int position) {
-//        if(position<=)
-//        mPosition = position;
-//    }
-//
-//    @Override
-//    public void onBackButtonClick(int position) {
-//        mPosition = position;
-//    }
+    }
+
 }
