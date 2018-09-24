@@ -137,8 +137,6 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         outState.putString(VIDEO_URL, mVideoUrl);
         outState.putString(THUMBNAIL_URL, mThumbnail);
         outState.putString(DESCRIPTION, mShortDescription);
-
-
         outState.putBoolean(PLAY_STATE, mPlayState);
     }
 
@@ -268,6 +266,25 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     public void onDestroy() {
         super.onDestroy();
         releasePlayer();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(mVideoUrl==""){
+            if(mThumbnail==""){
+                binding.imageviewNoVideo.setVisibility(View.VISIBLE);
+                binding.playerView.setVisibility(View.GONE);
+            }else{
+                binding.imageviewNoVideo.setVisibility(View.GONE);
+                binding.playerView.setVisibility(View.VISIBLE);
+                initializeThePlayer(Uri.parse(mThumbnail));
+            }
+        }else{
+            binding.imageviewNoVideo.setVisibility(View.GONE);
+            binding.playerView.setVisibility(View.VISIBLE);
+            initializeThePlayer(Uri.parse(mVideoUrl));
+        }
     }
 
     private void releasePlayer(){
