@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+
 import java.util.List;
 
 import mirror.co.larry.pj.Models.Ingredients;
@@ -53,7 +56,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder viewHolder, final int i) {
-//        final Recipe recipe = mRecipeList.get(i);
+        final Recipe recipe = mRecipeList.get(i);
         viewHolder.binding.setRecipe(mRecipeList.get(i));
         viewHolder.binding.tvRecipeName.setText(mRecipeList.get(i).getName());
         viewHolder.binding.tvRecipeName.setOnClickListener(new View.OnClickListener() {
@@ -68,9 +71,15 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
                 bundle.putSerializable(RECIPE_KEY, viewHolder.binding.getRecipe());
                 i.putExtra(RECIPE_KEY_EXTRA, bundle);
                 mContext.startActivity(i);
-
             }
         });
+
+        RequestOptions requestOptions = new RequestOptions();
+        requestOptions.placeholder(R.drawable.cake);
+        Glide.with(mContext)
+                .load(recipe.getImage())
+                .apply(requestOptions)
+                .into(viewHolder.binding.recipeImage);
 
     }
 
