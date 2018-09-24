@@ -33,6 +33,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
+import mirror.co.larry.pj.NetworkUtil.NetworkUtils;
 import mirror.co.larry.pj.R;
 import mirror.co.larry.pj.databinding.FragmentRecipeStepDetailBinding;
 import okhttp3.internal.Util;
@@ -55,18 +56,19 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     public static final String DESCRIPTION = "description";
     public static final String PLAYER_POSITION = "player_position";
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
     private static final String ARG_VIDEO = "videoUrl";
     public static final String ARG_THUMBNAIL= "thumbnail";
     private static final String ARG_DESCRIPTION = "description";
     private static final String ARG_POSITION = "position";
     private static final String ARG_IS_TWOPANE = "twopane";
-    // TODO: Rename and change types of parameters
+    public static final String ARG_LIST_SIZE = "list_size";
+
     private String mVideoUrl;
     private String mShortDescription;
     private String mThumbnail;
     private int mPosition;
+    private int mListSize;
     private OnFragmentInteractionListener mListener;
     SimpleExoPlayer exoPlayer;
     boolean isTwoPane;
@@ -91,11 +93,12 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         return fragment;
     }
 
-    public static RecipeStepDetailFragment newInstance(int position, String video,String thumbnail, String description) {
+    public static RecipeStepDetailFragment newInstance(int position, int listSize, String video,String thumbnail, String description) {
         RecipeStepDetailFragment fragment = new RecipeStepDetailFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_POSITION, position);
         args.putString(ARG_VIDEO, video);
+        args.putInt(ARG_LIST_SIZE, listSize);
         args.putString(ARG_THUMBNAIL, thumbnail);
         args.putString(ARG_DESCRIPTION, description);
         fragment.setArguments(args);
@@ -109,6 +112,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
             if (getArguments() != null) {
                 isTwoPane = getArguments().getBoolean(ARG_IS_TWOPANE);
                 mPosition = getArguments().getInt(ARG_POSITION);
+                mListSize = getArguments().getInt(ARG_LIST_SIZE);
                 mVideoUrl = getArguments().getString(ARG_VIDEO);
                 mThumbnail = getArguments().getString(ARG_THUMBNAIL);
                 mShortDescription = getArguments().getString(ARG_DESCRIPTION);
@@ -141,50 +145,6 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE){
-            // hide description view
-            binding.tvDescription.setVisibility(View.GONE);
-            ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-            if(((AppCompatActivity)getActivity()).getSupportActionBar()!=null){
-                ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
-            }
-            if(isTwoPane){
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
-                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-                params.height= ViewGroup.LayoutParams.MATCH_PARENT;
-                binding.playerView.setLayoutParams(params);
-            }else{
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) binding.playerView.getLayoutParams();
-                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-                params.height= ViewGroup.LayoutParams.MATCH_PARENT;
-                binding.playerView.setLayoutParams(params);
-            }
-
-        }else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-            ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-            if(((AppCompatActivity)getActivity()).getSupportActionBar()!=null){
-                ((AppCompatActivity)getActivity()).getSupportActionBar().show();
-            }
-            //unhide description
-            binding.tvDescription.setVisibility(View.VISIBLE);
-            if(isTwoPane){
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
-                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-                params.height=350;
-                binding.playerView.setLayoutParams(params);
-            }else{
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) binding.playerView.getLayoutParams();
-                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
-                params.height=350;
-                binding.playerView.setLayoutParams(params);
-            }
-
-        }
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
@@ -210,8 +170,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         binding.tvDescription.setText(mShortDescription);
         View v = binding.getRoot();
 
-        binding.playerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(),R.drawable.ic_launcher_background));
-
+        binding.playerView.setDefaultArtwork(BitmapFactory.decodeResource(getResources(),R.drawable.cake));
 
         if(mVideoUrl==""){
             if(mThumbnail==""){
@@ -228,23 +187,68 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
             initializeThePlayer(Uri.parse(mVideoUrl));
         }
 
-//        mForwardButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                mListener.onNextButtonClick(mPosition++);
-//            }
-//        });
-//
-//        mBackButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                mListener.onNextButtonClick(mPosition--);
-//            }
-//        });
+        // check the current orientation
+        int orientation = getActivity().getResources().getConfiguration().orientation;
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+            if(isTwoPane){
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height= 700;
+                binding.playerView.setLayoutParams(params);
+            }else{
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height= ViewGroup.LayoutParams.MATCH_PARENT;
+                binding.playerView.setLayoutParams(params);
+                binding.btNext.setVisibility(View.GONE);
+                binding.btBack.setVisibility(View.GONE);
+                binding.tvDescription.setVisibility(View.GONE);
+                ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
+            }
 
+        }else{
+            ((AppCompatActivity)getActivity()).getSupportActionBar().show();
+            if(isTwoPane){
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height=500;
+                binding.playerView.setLayoutParams(params);
+            }else{
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) binding.playerView.getLayoutParams();
+                params.width= ViewGroup.LayoutParams.MATCH_PARENT;
+                params.height=ViewGroup.LayoutParams.WRAP_CONTENT;
+                binding.playerView.setLayoutParams(params);
+
+                // check if step position is less than list size
+                if(mPosition==mListSize-1){
+                    binding.btNext.setVisibility(View.GONE);
+                }else{
+                    binding.btNext.setVisibility(View.VISIBLE);
+                }
+                binding.btNext.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mPosition = mPosition+1;
+                        mListener.onNextButtonClick(mPosition);
+                    }
+                });
+
+                if(mPosition==(mListSize-mListSize)){
+                    binding.btBack.setVisibility(View.GONE);
+                }else{
+                    binding.btBack.setVisibility(View.VISIBLE);
+                }
+                binding.btBack.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mPosition = mPosition-1;
+                        mListener.onBackButtonClick(mPosition);
+                    }
+                });
+            }
+        }
         return v;
     }
-
 
 
     @Override
@@ -261,6 +265,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         }
 
     }
+
     private void initializeThePlayer(Uri mediaUri){
         if(exoPlayer==null){
             TrackSelector trackSelector = new DefaultTrackSelector();
@@ -278,7 +283,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         }
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
+
     public void onButtonPressed(Uri uri) {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
@@ -315,8 +320,8 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-//        void onNextButtonClick(int position);
-//        void onBackButtonClick(int position);
+        void onNextButtonClick(int position);
+        void onBackButtonClick(int position);
     }
 
 }

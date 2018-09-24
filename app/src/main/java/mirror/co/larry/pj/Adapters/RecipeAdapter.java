@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import mirror.co.larry.pj.Models.Ingredients;
 import mirror.co.larry.pj.Models.Recipe;
 import mirror.co.larry.pj.Models.Steps;
 import mirror.co.larry.pj.R;
+import mirror.co.larry.pj.Service.IngredientService;
 import mirror.co.larry.pj.UI.MainActivity;
 import mirror.co.larry.pj.databinding.RecipeListItemBinding;
 
@@ -25,6 +27,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
     public static final String INGREDIENT_KEY = "ingredients";
     public static final String INGREDIENT_KEY_EXTRA = "ingredients_extra";
     public static final String POSITION_KEY = "key";
+    public static final String KEY_STEPS_LIST = "key_step_list";
     public static final String RECIPE_KEY_EXTRA = "recipe_extra";
     public static final String KEY_STEPS_EXTRA = "extra_step_key";
     public static final String KEY_STEPS = "key_step";
@@ -56,11 +59,16 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.ViewHolder
         viewHolder.binding.tvRecipeName.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // lastview recipe will be displayed  in the widget
+                Recipe recipe = viewHolder.binding.getRecipe();
+                IngredientService.startActionAddIngredient(mContext, recipe);
+
                 Intent i = new Intent(mContext, MainActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putSerializable(RECIPE_KEY, viewHolder.binding.getRecipe());
                 i.putExtra(RECIPE_KEY_EXTRA, bundle);
                 mContext.startActivity(i);
+
             }
         });
 

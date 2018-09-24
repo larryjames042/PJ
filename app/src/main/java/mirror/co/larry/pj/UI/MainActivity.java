@@ -4,12 +4,14 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import java.io.Serializable;
 import java.util.List;
 
 import mirror.co.larry.pj.Adapters.RecipeAdapter;
@@ -19,10 +21,10 @@ import mirror.co.larry.pj.Fragments.RecipeStepDetailFragment;
 import mirror.co.larry.pj.Models.Ingredients;
 import mirror.co.larry.pj.Models.Recipe;
 import mirror.co.larry.pj.Models.Steps;
+import mirror.co.larry.pj.NetworkUtil.NetworkUtils;
 import mirror.co.larry.pj.R;
-import mirror.co.larry.pj.databinding.ActivityMainBinding;
 
-public class MainActivity extends AppCompatActivity implements RecipeDetailFragment.OnItemClickListener, RecipeStepDetailFragment.OnFragmentInteractionListener, RecipeIngredientFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements RecipeStepDetailFragment.OnFragmentInteractionListener, RecipeDetailFragment.OnItemClickListener, RecipeIngredientFragment.OnFragmentInteractionListener {
 
 
     Recipe recipe;
@@ -36,6 +38,9 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setDisplayShowTitleEnabled(true);
 
+        if(!NetworkUtils.isConnected(this)){
+            Snackbar.make(getWindow().getDecorView().getRootView() , "Check your Internet connection", Snackbar.LENGTH_SHORT).show();
+        }
 
         recipe=null;
         Bundle b = getIntent().getBundleExtra(RecipeAdapter.RECIPE_KEY_EXTRA);
@@ -52,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
             if(savedInstanceState==null){
                 fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeIngredientFragment.newInstance(recipe.getIngredients()), null).commit();
             }
-
 
         }else{
             isTwoPane = false;
@@ -79,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 fragmentManager.beginTransaction().replace(R.id.recipe_detail_step_container, RecipeStepDetailFragment.newInstance(isTwoPane,mPosition,videoUrl,thumbnailUrl,des), null).commit();
             }
+
         }else{
 
             Intent intent = new Intent(MainActivity.this, RecipeStepDetailActivity.class);
@@ -95,17 +100,27 @@ public class MainActivity extends AppCompatActivity implements RecipeDetailFragm
                         stepsList.get(actualPosition).getThumbnailURL());
 
                 Bundle b = new Bundle();
-//                b.putInt( RecipeAdapter.POSITION_KEY ,actualPosition);
+                b.putInt( RecipeAdapter.POSITION_KEY ,actualPosition);
                 b.putSerializable(RecipeAdapter.KEY_STEPS, steps);
+                b.putSerializable(RecipeAdapter.KEY_STEPS_LIST, (Serializable) stepsList);
                 intent.putExtra(RecipeAdapter.KEY_STEPS_EXTRA,b);
                 startActivity(intent);
             }
         }
-
     }
 
     @Override
     public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onNextButtonClick(int position) {
+
+    }
+
+    @Override
+    public void onBackButtonClick(int position) {
 
     }
 

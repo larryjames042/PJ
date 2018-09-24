@@ -69,7 +69,6 @@ public class RecipeIngredientFragment extends android.support.v4.app.Fragment {
         mIngredientRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         mIngredientRecyclerView.setHasFixedSize(true);
         mIngredientAdapter = new RecipeIngredientAdapter(getActivity(), mIngredientsList);
-        Toast.makeText(getActivity(), "Ingredients Fragment", Toast.LENGTH_SHORT).show();
         mIngredientRecyclerView.setAdapter(mIngredientAdapter);
         return v;
     }

@@ -3,6 +3,7 @@
     package="mirror.co.larry.pj">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:allowBackup="true"
@@ -19,12 +20,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:launchMode="singleTop"
             android:name=".UI.RecipeStepDetailActivity"
+            android:launchMode="singleTop"
             android:parentActivityName=".UI.MainActivity" />
         <activity
-            android:launchMode="singleTop"
             android:name=".UI.MainActivity"
+            android:launchMode="singleTop"
             android:parentActivityName=".UI.RecipeActivity" />
 
         <receiver android:name=".IngredientWidgetProvider">
@@ -36,6 +37,7 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/ingredient_widget_provider_info" />
         </receiver>
+        <service android:name=".Service.IngredientService" />
     </application>
 
 </manifest>

@@ -12,15 +12,25 @@
         android:layout_margin="@dimen/recipe_item_margin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <TextView
-            tools:text="Cake"
-            android:textSize="@dimen/recipe_item_text_size"
-            android:id="@+id/tv_recipe_name"
-            android:gravity="center"
-            android:text="@{recipe.name}"
-            android:padding="@dimen/recipe_item_padding"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+
+            <ImageView
+                android:src="@drawable/cake"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"/>
+            <TextView
+                tools:text="Cake"
+                android:textSize="@dimen/recipe_item_text_size"
+                android:id="@+id/tv_recipe_name"
+                android:gravity="center_horizontal"
+                android:layout_gravity="bottom"
+                android:textStyle="bold"
+                android:text="@{recipe.name}"
+                android:padding="@dimen/recipe_item_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
     </android.support.v7.widget.CardView>
 </layout>
 
