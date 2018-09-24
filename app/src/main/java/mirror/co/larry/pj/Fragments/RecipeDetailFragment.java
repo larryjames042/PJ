@@ -3,6 +3,8 @@ package mirror.co.larry.pj.Fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -30,10 +32,15 @@ public class RecipeDetailFragment extends android.support.v4.app.Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    public static final String LIST_STATE = "list_state";
 
     // TODO: Rename and change types of parameters
     private Recipe mRecipe;
-
+    LinearLayoutManager linearLayoutManager;
+    Parcelable listState;
+    int lastFirstVisiblePosition;
+    public static int index = -1;
+    public static int top = -1;
     private OnItemClickListener mListener;
     RecyclerView masterListRecyclerView;
     RecipeMasterListAdapter adapter;
@@ -71,10 +78,11 @@ public class RecipeDetailFragment extends android.support.v4.app.Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_recipe_detail, container, false);
-        masterListRecyclerView = v.findViewById(R.id.rv_master_list);
-        masterListRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        masterListRecyclerView.setHasFixedSize(true);
 
+        masterListRecyclerView = v.findViewById(R.id.rv_master_list);
+        linearLayoutManager = new LinearLayoutManager(getActivity());
+        masterListRecyclerView.setLayoutManager(linearLayoutManager);
+        masterListRecyclerView.setHasFixedSize(true);
         adapter = new RecipeMasterListAdapter(getActivity(), mRecipe , mListener);
         masterListRecyclerView.setAdapter(adapter);
 
@@ -99,6 +107,25 @@ public class RecipeDetailFragment extends android.support.v4.app.Fragment {
         super.onDetach();
         mListener = null;
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        index = linearLayoutManager.findFirstVisibleItemPosition();
+        View v = masterListRecyclerView.getChildAt(0);
+        top = (v == null) ? 0 : (v.getTop() - masterListRecyclerView.getPaddingTop());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(index != -1)
+        {
+            linearLayoutManager.scrollToPositionWithOffset( index, top);
+        }
+    }
+
+
 
     /**
      * This interface must be implemented by activities that contain this
