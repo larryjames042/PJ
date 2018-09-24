@@ -22,13 +22,18 @@ import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
@@ -55,6 +60,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     public static final String THUMBNAIL_URL = "thumbnailurl";
     public static final String DESCRIPTION = "description";
     public static final String PLAYER_POSITION = "player_position";
+    public static final String PLAY_STATE = "playState";
 
 
     private static final String ARG_VIDEO = "videoUrl";
@@ -69,6 +75,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
     private String mThumbnail;
     private int mPosition;
     private int mListSize;
+    private boolean mPlayState;
     private OnFragmentInteractionListener mListener;
     SimpleExoPlayer exoPlayer;
     boolean isTwoPane;
@@ -130,6 +137,9 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
         outState.putString(VIDEO_URL, mVideoUrl);
         outState.putString(THUMBNAIL_URL, mThumbnail);
         outState.putString(DESCRIPTION, mShortDescription);
+
+
+        outState.putBoolean(PLAY_STATE, mPlayState);
     }
 
     @Override
@@ -155,7 +165,9 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
             mThumbnail = savedInstanceState.getString(THUMBNAIL_URL);
             mShortDescription = savedInstanceState.getString(DESCRIPTION);
             playerPosition = savedInstanceState.getLong(PLAYER_POSITION, C.TIME_UNSET);
-
+            mPlayState = savedInstanceState.getBoolean(PLAY_STATE);
+        }else{
+            mPlayState = true;
         }
         // Inflate the layout for this fragment
          binding = DataBindingUtil.inflate(inflater, R.layout.fragment_recipe_step_detail, container, false);
@@ -247,6 +259,7 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
                 });
             }
         }
+
         return v;
     }
 
@@ -278,7 +291,43 @@ public class RecipeStepDetailFragment extends android.support.v4.app.Fragment {
                 exoPlayer.seekTo(playerPosition);
             }
             exoPlayer.prepare(mediaSource);
-            exoPlayer.setPlayWhenReady(true);
+            // to handle play/pause state
+            exoPlayer.addListener(new ExoPlayer.EventListener() {
+                @Override
+                public void onTimelineChanged(Timeline timeline, Object manifest) {
+
+                }
+
+                @Override
+                public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
+
+                }
+
+                @Override
+                public void onLoadingChanged(boolean isLoading) {
+
+                }
+
+                @Override
+                public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+                    if (playWhenReady && playbackState == ExoPlayer.STATE_READY) {
+                        mPlayState = true;
+                    } else {
+                        mPlayState = false;
+                    }
+                }
+
+                @Override
+                public void onPlayerError(ExoPlaybackException error) {
+
+                }
+
+                @Override
+                public void onPositionDiscontinuity() {
+
+                }
+            });
+            exoPlayer.setPlayWhenReady(mPlayState);
 
         }
     }
